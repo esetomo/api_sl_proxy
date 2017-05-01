@@ -18,7 +18,7 @@ default
             url = body;
             llLoadURL(llGetOwner(), 
                       "", 
-                      PROXY + "/oauth/?client_id=" + CLIENT_ID + "&scope=read+write+follow&domain=" + DOMAIN + "&sl=" + url);
+                      PROXY + "/oauth/" + CLIENT_ID + "/read write follow/" + DOMAIN + "?sl=" + url);
         } else {
             if(method == "POST"){
                 list data = ["grant_type", "authorization_code",

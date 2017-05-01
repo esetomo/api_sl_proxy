@@ -4,12 +4,9 @@ require 'net/http'
 
 enable :sessions
 
-get '/oauth/' do
+get '/oauth/:client_id/:scope/:domain' do
   return 403 if request.referer
-  return 403 unless request[:client_id]
-  return 403 unless request[:scope]
-  return 403 unless request[:domain]
-  return 403 unless %r{\Ahttps://sim\d+\.agni\.lindenlab\.com\:\d+\/}.match(request[:sl])
+  return 403 unless %r{\Ahttps://sim\d+\.agni\.lindenlab\.com\:\d+\/}.match(params[:sl])
 
   uri = URI.parse(request[:sl])
   http = Net::HTTP.new(uri.host, uri.port)
@@ -25,12 +22,12 @@ get '/oauth/' do
                               "response_type" => "code",
                               "scope" => params[:scope],
                               "redirect_uri" => "#{request.base_url}/oauth/callback")
-  redirect "https://#{request[:domain]}/oauth/authorize?" + query
+  redirect "https://#{params[:domain]}/oauth/authorize?" + query
 end
 
 get '/oauth/callback' do
   return 403 unless %r{\Ahttps://sim\d+\.agni\.lindenlab\.com\:\d+\/}.match(session[:sl])
-  return 403 unless request[:code]
+  return 403 unless params[:code]
 
   uri = URI.parse(session[:sl])
   http = Net::HTTP.new(uri.host, uri.port)
@@ -38,7 +35,7 @@ get '/oauth/callback' do
   http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
   req = Net::HTTP::Post.new(uri.path)
-  req.body = request[:code]
+  req.body = params[:code]
   res = http.request(req)
   return 403 unless res.code == "200"
   
